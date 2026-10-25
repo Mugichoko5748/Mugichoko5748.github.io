@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>位置情報テスト</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        button {
+            font-size: 18px;
+            padding: 12px 20px;
+        }
+        #result {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+<body>
+    <h1>位置情報テスト</h1>
+    <p>ボタンを押すと現在位置を取得してサーバーへ送信します。</p>
+
+    <button id="sendButton">位置情報を取得・送信</button>
+    <div id="result">待機中</div>
+
+    <script>
+        const button = document.getElementById("sendButton");
+        const result = document.getElementById("result");
+
+        button.addEventListener("click", () => {
+            if (!navigator.geolocation) {
+                result.textContent = "このブラウザは位置情報に対応していません。";
+                return;
+            }
+
+            button.disabled = true;
+            result.textContent = "位置情報を取得中...";
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const data = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+
+                    result.textContent =
+                        `緯度: ${data.latitude}\n` +
+                        `経度: ${data.longitude}\n` +
+                        `精度: 約${data.accuracy} m\n\n` +
+                        "サーバーへ送信中...";
+
+                    try {
+                        const response = await fetch("/location", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+
+                        result.textContent += "\n送信成功";
+                    } catch (error) {
+                        result.textContent +=
+                            `\n送信失敗: ${error.message}`;
+                    }
+
+                    button.disabled = false;
+                },
+                (error) => {
+                    const messages = {
+                        1: "位置情報の使用が許可されていません。",
+                        2: "位置情報を取得できません。端末の位置情報設定を確認してください。",
+                        3: "位置情報の取得がタイムアウトしました。"
+                    };
+
+                    result.textContent =
+                        messages[error.code] || error.message;
+                    button.disabled = false;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+            );
+        });
+    </script>
+</body>
+</html>
