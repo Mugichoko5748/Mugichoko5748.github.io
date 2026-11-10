@@ -58,8 +58,6 @@
                         "サーバーへ送信中...";
 
                     try {
-                        const response = await fetch("https://again-television-kay-finances.trycloudflare.com/location", {
-                            method: "POST",
                             headers: {
                                 "Content-Type": "application/json"
                             },
@@ -97,5 +95,11 @@
             );
         });
     </script>
+    <label for="serverUrl">送信先URL</label>
+    <input
+    type="url"
+    id="serverUrl"
+    placeholder="https://xxx.trycloudflare.com"
+    >
 </body>
 </html>
