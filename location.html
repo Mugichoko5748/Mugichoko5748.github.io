@@ -58,8 +58,13 @@
                         "サーバーへ送信中...";
 
                     try {
-                        const response = await fetch("/location", {
-                            method: "POST",
+                        const serverUrl = document.getElementById("serverUrl").value.trim();
+
+                        if (!serverUrl) {
+                            throw new Error("送信先URLを入力してください");
+                        }
+                        
+                        const response = await fetch(`${serverUrl.replace(/\/+$/, "")}/location`, {    method: "POST",
                             headers: {
                                 "Content-Type": "application/json"
                             },
@@ -97,5 +102,11 @@
             );
         });
     </script>
+    <label for="serverUrl">送信先URL</label>
+    <input
+    type="url"
+    id="serverUrl"
+    placeholder="https://xxx.trycloudflare.com"
+    >
 </body>
 </html>
